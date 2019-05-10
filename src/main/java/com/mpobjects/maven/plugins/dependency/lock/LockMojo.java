@@ -1,8 +1,11 @@
 package com.mpobjects.maven.plugins.dependency.lock;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -11,7 +14,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
-import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -23,16 +25,15 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
 
-@Mojo(name = "lock", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, requiresDependencyResolution = ResolutionScope.COMPILE)
+@Mojo(
+		name = "lock",
+		defaultPhase = LifecyclePhase.GENERATE_RESOURCES,
+		requiresDependencyResolution = ResolutionScope.TEST,
+		requiresDependencyCollection = ResolutionScope.TEST)
 public class LockMojo extends AbstractMojo {
-	/**
-	 * The current project
-	 */
-	@Component
-	private MavenProject mavenProject;
 
 	@Component
-	private ModelBuilder modelBuilder;
+	private MavenProject mavenProject;
 
 	/**
 	 * Output file
@@ -44,22 +45,30 @@ public class LockMojo extends AbstractMojo {
 	public void execute() throws MojoExecutionException {
 		Model model = initializeModel();
 		addDependencyManagement(model);
-
 		writeModel(model, new File(mavenProject.getBuild().getDirectory(), outputFilename));
 	}
 
 	private void addDependencyManagement(Model aModel) {
 		// Based on
 		// https://github.com/jboss/bom-builder-maven-plugin/blob/master/src/main/java/org/jboss/maven/plugins/bombuilder/BuildBomMojo.java
-		// TODO: append to dep
 		// TODO: only add transitive?
 		// TODO: do not replace
 
 		List<Artifact> projectArtifacts = new ArrayList<>(mavenProject.getArtifacts());
+		if (projectArtifacts.isEmpty()) {
+			getLog().debug("No dependencies to manage.");
+			return;
+		}
+
 		Collections.sort(projectArtifacts);
 
-		DependencyManagement depMgmt = new DependencyManagement();
+		DependencyManagement depMgmt = aModel.getDependencyManagement();
+		if (depMgmt == null) {
+			depMgmt = new DependencyManagement();
+			aModel.setDependencyManagement(depMgmt);
+		}
 		for (Artifact artifact : projectArtifacts) {
+			getLog().info("artifact " + artifact);
 			Dependency dep = new Dependency();
 			dep.setGroupId(artifact.getGroupId());
 			dep.setArtifactId(artifact.getArtifactId());
@@ -72,19 +81,21 @@ public class LockMojo extends AbstractMojo {
 			}
 			depMgmt.addDependency(dep);
 		}
-		aModel.setDependencyManagement(depMgmt);
-		getLog().debug("Added " + projectArtifacts.size() + " dependencies.");
+		// getLog().debug("Added " + projectArtifacts.size() + " dependencies.");
 	}
 
 	private Model initializeModel() {
-		return null;
+		return mavenProject.getOriginalModel().clone();
 	}
 
 	private void writeModel(Model aModel, File aFile) throws MojoExecutionException {
 		if (!aFile.getParentFile().exists()) {
-			aFile.getParentFile().mkdirs();
+			if (!aFile.getParentFile().mkdirs()) {
+				throw new MojoExecutionException("Unable to write pom file. Cannot create parent directory " + aFile.getParentFile());
+			}
 		}
-		try (FileWriter writer = new FileWriter(aFile)) {
+		try (FileOutputStream out = new FileOutputStream(aFile);
+				Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);) {
 			MavenXpp3Writer mavenWriter = new MavenXpp3Writer();
 			mavenWriter.write(writer, aModel);
 		} catch (IOException e) {

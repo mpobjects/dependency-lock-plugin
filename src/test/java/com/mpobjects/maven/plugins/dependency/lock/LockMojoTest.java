@@ -1,61 +1,43 @@
 package com.mpobjects.maven.plugins.dependency.lock;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import org.apache.maven.plugin.testing.MojoRule;
-import org.apache.maven.plugin.testing.WithoutMojo;
-
-import org.junit.Rule;
-import static org.junit.Assert.*;
-import org.junit.Test;
 import java.io.File;
 
-public class LockMojoTest
-{
-    @Rule
-    public MojoRule rule = new MojoRule()
-    {
-        @Override
-        protected void before() throws Throwable 
-        {
-        }
+import org.apache.maven.plugin.testing.MojoRule;
+import org.junit.Rule;
+import org.junit.Test;
 
-        @Override
-        protected void after()
-        {
-        }
-    };
+public class LockMojoTest {
+	@Rule
+	public MojoRule rule = new MojoRule() {
+		@Override
+		protected void after() {
+		}
 
-    /**
-     * @throws Exception if any
-     */
-    @Test
-    public void testSomething()
-            throws Exception
-    {
-        File pom = new File( "target/test-classes/project-to-test/" );
-        assertNotNull( pom );
-        assertTrue( pom.exists() );
+		@Override
+		protected void before() throws Throwable {
+		}
+	};
 
-        LockMojo myMojo = ( LockMojo ) rule.lookupConfiguredMojo( pom, "touch" );
-        assertNotNull( myMojo );
-        myMojo.execute();
+	@Test
+	public void testLockMojo() throws Exception {
+		// TODO: artifacts are not resolved
 
-        File outputDirectory = ( File ) rule.getVariableValueFromObject( myMojo, "outputDirectory" );
-        assertNotNull( outputDirectory );
-        assertTrue( outputDirectory.exists() );
+		File pom = new File("target/test-classes/project-to-test/");
+		assertNotNull(pom);
+		assertTrue(pom.exists());
 
-        File touch = new File( outputDirectory, "touch.txt" );
-        assertTrue( touch.exists() );
+		LockMojo myMojo = (LockMojo) rule.lookupConfiguredMojo(pom, "lock");
+		assertNotNull(myMojo);
+		myMojo.execute();
 
-    }
+		String outputFilename = (String) rule.getVariableValueFromObject(myMojo, "outputFilename");
+		assertNotNull(outputFilename);
 
-    /** Do not need the MojoRule. */
-    @WithoutMojo
-    @Test
-    public void testSomethingWhichDoesNotNeedTheMojoAndProbablyShouldBeExtractedIntoANewClassOfItsOwn()
-    {
-        assertTrue( true );
-    }
+		File file = new File("target/test-classes/project-to-test/target", outputFilename);
+		assertTrue(file.exists());
+	}
 
 }
-
