@@ -1,5 +1,6 @@
 package com.mpobjects.maven.plugins.dependency.lock;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -32,7 +33,7 @@ public class LockMojoTest {
 		myMojo.execute();
 
 		String outputFilename = (String) rule.getVariableValueFromObject(myMojo, "outputFilename");
-		assertNotNull(outputFilename);
+		assertEquals("new-pom.xml", outputFilename);
 
 		File file = new File("target/test-classes/project-to-test/target", outputFilename);
 		assertTrue(file.exists());

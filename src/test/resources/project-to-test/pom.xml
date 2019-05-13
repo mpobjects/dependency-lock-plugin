@@ -22,6 +22,9 @@
 			<plugin>
 				<groupId>com.mpobjects.maven</groupId>
 				<artifactId>dependency-lock-plugin</artifactId>
+				<configuration>
+					<outputFilename>new-pom.xml</outputFilename>
+				</configuration>
 				<executions>
 					<execution>
 						<goals>

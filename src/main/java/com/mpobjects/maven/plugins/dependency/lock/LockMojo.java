@@ -55,8 +55,6 @@ public class LockMojo extends AbstractMojo {
 	private void addDependencyManagement(Model aModel) {
 		// Based on
 		// https://github.com/jboss/bom-builder-maven-plugin/blob/master/src/main/java/org/jboss/maven/plugins/bombuilder/BuildBomMojo.java
-		// TODO: only add transitive?
-		// TODO: do not replace
 
 		List<Artifact> projectArtifacts = new ArrayList<>(mavenProject.getArtifacts());
 		if (projectArtifacts.isEmpty()) {
@@ -72,7 +70,6 @@ public class LockMojo extends AbstractMojo {
 			aModel.setDependencyManagement(depMgmt);
 		}
 		for (Artifact artifact : projectArtifacts) {
-			getLog().info("artifact " + artifact);
 			Dependency dep = new Dependency();
 			dep.setGroupId(artifact.getGroupId());
 			dep.setArtifactId(artifact.getArtifactId());
@@ -83,9 +80,9 @@ public class LockMojo extends AbstractMojo {
 			if (!StringUtils.isEmpty(artifact.getType())) {
 				dep.setType(artifact.getType());
 			}
+			getLog().debug("Registering artifact " + artifact);
 			depMgmt.addDependency(dep);
 		}
-		// getLog().debug("Added " + projectArtifacts.size() + " dependencies.");
 	}
 
 	private Model initializeModel() {
