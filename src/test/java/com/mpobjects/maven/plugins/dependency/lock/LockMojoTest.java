@@ -23,8 +23,6 @@ public class LockMojoTest {
 
 	@Test
 	public void testLockMojo() throws Exception {
-		// TODO: artifacts are not resolved
-
 		File pom = new File("target/test-classes/project-to-test/");
 		assertNotNull(pom);
 		assertTrue(pom.exists());
