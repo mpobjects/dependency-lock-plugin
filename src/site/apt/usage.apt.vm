@@ -9,6 +9,7 @@
 Usage
 
   Generate a dependency locked pom in <<<target/pom-locked.xml>>>.
+
 +-----
 <project>
   [...]
