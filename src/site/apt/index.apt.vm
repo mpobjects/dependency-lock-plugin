@@ -14,16 +14,15 @@ ${project.name}
  
   General information about the goals.
  
-  * {{{lock-mojo.html}dependency-lock-plugin:lock}} Create a dependency locked pom.xml
+  * {{{./lock-mojo.html}dependency-lock-plugin:lock}} Create a dependency locked pom.xml
  
 * Usage
  
-  General instructions on how to use the Dependency Lock Plugin can be found on the {{{usage.html}usage page}}. 
+  General instructions on how to use the Dependency Lock Plugin can be found on the {{{./usage.html}usage page}}. 
  
   If you feel like the plugin is missing a feature or has a defect, you can fill a feature request or bug report in our
-  {{{issue-management.html}issue management system}}. When creating a new issue, please provide a comprehensive description of your
+  {{{./issue-management.html}issue management system}}. When creating a new issue, please provide a comprehensive description of your
   concern. Especially for fixing bugs it is crucial that the developers can reproduce your problem. For this reason,
   entire debug logs, POMs or most preferably little demo projects attached to the issue are very much appreciated.
   Of course, patches are welcome, too. Contributors can check out the project from our
-  {{{scm.html}source repository}} and will find supplementary information in the
-  {{{/guides/development/guide-helping.html}guide to helping with Maven}}. 
+  {{{./scm.html}source repository}}. 
