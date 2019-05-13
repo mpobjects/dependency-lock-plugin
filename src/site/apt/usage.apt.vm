@@ -1,0 +1,33 @@
+ ------
+ Usage
+ ------
+ Michiel Hendriks
+ ------
+ 2019-05-13
+ ------
+
+Usage
+ 
++-----
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+      	<groupId>com.mpobjects.maven</groupId>
+        <artifactId>dependency-lock-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <id>lock-dependencies</id>
+            <goals>
+              <goal>lock</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++-----
