@@ -25,6 +25,10 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
 
+/**
+ * Generate a <code>pom.xml</code> with dependencies, including transitive, explicitly locked to a specific version by
+ * generating <code>&lt;dependencyManagemenet&gt;</code> entries. This mostly affects dependencies using version ranges.
+ */
 @Mojo(
 		name = "lock",
 		defaultPhase = LifecyclePhase.GENERATE_RESOURCES,
@@ -36,7 +40,7 @@ public class LockMojo extends AbstractMojo {
 	private MavenProject mavenProject;
 
 	/**
-	 * Output file
+	 * Output file.
 	 */
 	@Parameter(defaultValue = "pom-locked.xml", property = "lockedPom")
 	private String outputFilename;
