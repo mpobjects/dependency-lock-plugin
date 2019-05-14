@@ -39,6 +39,8 @@ public class LockMojo extends AbstractMojo {
 
 	/**
 	 * If true, do not lock dependencies of SNAPSHOTs.
+	 *
+	 * @since 1.1.0
 	 */
 	@Parameter(defaultValue = "true", property = "lockedPom.ignoreSnapshot")
 	private boolean ignoreSnapshot = true;
