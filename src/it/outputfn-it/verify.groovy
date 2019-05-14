@@ -1,5 +1,5 @@
  def expected = new XmlSlurper().parse(new File(basedir, "expected/pom-locked.xml"))
- def actual = new XmlSlurper().parse(new File(basedir, "target/pom-locked.xml"))
+ def actual = new XmlSlurper().parse(new File(basedir, "target/locked.xml"))
  
  def isDifferent = !expected.dependencyManagement.toString().equals(actual.dependencyManagement.toString());
  if (isDifferent) {

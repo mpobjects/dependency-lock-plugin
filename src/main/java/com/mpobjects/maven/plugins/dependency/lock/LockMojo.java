@@ -8,7 +8,9 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
@@ -17,7 +19,6 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -36,7 +37,13 @@ import org.codehaus.plexus.util.StringUtils;
 		requiresDependencyCollection = ResolutionScope.TEST)
 public class LockMojo extends AbstractMojo {
 
-	@Component
+	/**
+	 * If true, do not lock dependencies of SNAPSHOTs.
+	 */
+	@Parameter(defaultValue = "true", property = "lockedPom.ignoreSnapshot")
+	private boolean ignoreSnapshot = true;
+
+	@Parameter(defaultValue = "${project}", readonly = true)
 	private MavenProject mavenProject;
 
 	/**
@@ -52,41 +59,78 @@ public class LockMojo extends AbstractMojo {
 		writeModel(model, new File(mavenProject.getBuild().getDirectory(), outputFilename));
 	}
 
-	private void addDependencyManagement(Model aModel) {
-		// Based on
-		// https://github.com/jboss/bom-builder-maven-plugin/blob/master/src/main/java/org/jboss/maven/plugins/bombuilder/BuildBomMojo.java
+	public String getOutputFilename() {
+		return outputFilename;
+	}
 
+	public boolean isIgnoreSnapshot() {
+		return ignoreSnapshot;
+	}
+
+	public void setIgnoreSnapshot(boolean aIgnoreSnapshots) {
+		ignoreSnapshot = aIgnoreSnapshots;
+	}
+
+	public void setOutputFilename(String aOutputFilename) {
+		outputFilename = aOutputFilename;
+	}
+
+	private void addDependencyManagement(Model aModel) {
 		List<Artifact> projectArtifacts = new ArrayList<>(mavenProject.getArtifacts());
 		if (projectArtifacts.isEmpty()) {
 			getLog().debug("No dependencies to manage.");
 			return;
 		}
-
 		Collections.sort(projectArtifacts);
 
 		DependencyManagement depMgmt = aModel.getDependencyManagement();
+		Set<String> managedArtifacts;
 		if (depMgmt == null) {
 			depMgmt = new DependencyManagement();
 			aModel.setDependencyManagement(depMgmt);
+			managedArtifacts = Collections.emptySet();
+		} else {
+			managedArtifacts = collectManagedArtifacts(depMgmt);
 		}
+
 		for (Artifact artifact : projectArtifacts) {
-			Dependency dep = new Dependency();
-			dep.setGroupId(artifact.getGroupId());
-			dep.setArtifactId(artifact.getArtifactId());
-			dep.setVersion(artifact.getVersion());
-			if (!StringUtils.isEmpty(artifact.getClassifier())) {
-				dep.setClassifier(artifact.getClassifier());
+			if (skipArtifact(managedArtifacts, artifact)) {
+				continue;
 			}
-			if (!StringUtils.isEmpty(artifact.getType())) {
-				dep.setType(artifact.getType());
-			}
+			Dependency dep = createDependency(artifact);
 			getLog().debug("Registering artifact " + artifact);
 			depMgmt.addDependency(dep);
 		}
 	}
 
+	private Set<String> collectManagedArtifacts(DependencyManagement aDepMgmt) {
+		Set<String> result = new HashSet<>();
+		for (Dependency dependency : aDepMgmt.getDependencies()) {
+			result.add(dependency.getManagementKey());
+		}
+		return result;
+	}
+
+	private Dependency createDependency(Artifact aArtifact) {
+		Dependency dep = new Dependency();
+		dep.setGroupId(aArtifact.getGroupId());
+		dep.setArtifactId(aArtifact.getArtifactId());
+		dep.setVersion(aArtifact.getVersion());
+		if (!StringUtils.isEmpty(aArtifact.getClassifier())) {
+			dep.setClassifier(aArtifact.getClassifier());
+		}
+		if (!StringUtils.isEmpty(aArtifact.getType())) {
+			dep.setType(aArtifact.getType());
+		}
+		return dep;
+	}
+
 	private Model initializeModel() {
 		return mavenProject.getOriginalModel().clone();
+	}
+
+	private boolean skipArtifact(Set<String> aManagedArtifacts, Artifact aArtifact) {
+		return aManagedArtifacts.contains(aArtifact.getDependencyConflictId()) || isIgnoreSnapshot() && aArtifact.isSnapshot();
 	}
 
 	private void writeModel(Model aModel, File aFile) throws MojoExecutionException {

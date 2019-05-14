@@ -3,9 +3,9 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.mpobjects.maven.it</groupId>
-  <artifactId>simple-it</artifactId>
+  <artifactId>depdefined-it</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <description>A simple IT verifying the basic use case.</description>
+  <description>IT with an explicitly defined dependency management entry.</description>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
