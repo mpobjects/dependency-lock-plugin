@@ -3,6 +3,6 @@
  
  def isDifferent = !expected.dependencyManagement.toString().equals(actual.dependencyManagement.toString());
  if (isDifferent) {
-    System.err.println("Generated " + file.absolutePath + " differs from expected " + expectedFile.absolutePath)
+    System.err.println("Generated file and expected file do not match.")
     return false
 }
